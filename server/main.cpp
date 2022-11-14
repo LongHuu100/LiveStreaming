@@ -165,6 +165,7 @@ public:
                              [](const std::shared_ptr<ostream> &stream, const string &arg) -> bool {
                                  //版本信息
                                  *stream << "编译日期: " << BUILD_TIME << std::endl;
+                                 *stream << "代码日期: " << COMMIT_TIME << std::endl;
                                  *stream << "当前git分支: " << BRANCH_NAME << std::endl;
                                  *stream << "当前git hash值: " << COMMIT_HASH << std::endl;
                                  throw ExitException();
@@ -222,6 +223,9 @@ int start_main(int argc,char *argv[]) {
 
         //启动异步日志线程
         Logger::Instance().setWriter(std::make_shared<AsyncLogWriter>());
+
+        InfoL << kServerName;
+
         //加载配置文件，如果配置文件不存在就创建一个
         loadIniConfig(g_ini_file.data());
 
