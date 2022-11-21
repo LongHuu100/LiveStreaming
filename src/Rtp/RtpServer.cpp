@@ -95,6 +95,9 @@ public:
                 if (!process && strong_self->_on_detach) {
                     strong_self->_on_detach();
                 }
+                if(process && strong_self->_on_detach){// tcp 链接防止断开不删除rtpServer
+                    process->setOnDetach(std::move(strong_self->_on_detach));
+                }
                 if (!process) { // process 未创建，触发rtp server 超时事件
                     NoticeCenter::Instance().emitEvent(Broadcast::KBroadcastRtpServerTimeout,strong_self->_local_port,strong_self->_stream_id,(int)strong_self->_tcp_mode,strong_self->_re_use_port,strong_self->_ssrc);
                 }
@@ -171,7 +174,6 @@ void RtpServer::start(uint16_t local_port, const string &stream_id, TcpMode tcp_
         //创建tcp服务器
         tcp_server = std::make_shared<TcpServer>(rtp_socket->getPoller());
         (*tcp_server)[RtpSession::kStreamID] = stream_id;
-        (*tcp_server)[RtpSession::kIsUDP] = 0;
         (*tcp_server)[RtpSession::kSSRC] = ssrc;
         if (tcp_mode == PASSIVE) {
             tcp_server->start<RtpSession>(rtp_socket->get_local_port(), local_ip);
@@ -202,7 +204,6 @@ void RtpServer::start(uint16_t local_port, const string &stream_id, TcpMode tcp_
 #if 1
         //单端口多线程接收多个流，根据ssrc区分流
         udp_server = std::make_shared<UdpServer>(rtp_socket->getPoller());
-        (*udp_server)[RtpSession::kIsUDP] = 1;
         udp_server->start<RtpSession>(rtp_socket->get_local_port(), local_ip);
         rtp_socket = nullptr;
 #else
