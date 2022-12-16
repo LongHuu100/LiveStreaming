@@ -24,9 +24,10 @@
 #include "Nack.h"
 #include "TwccContext.h"
 #include "SctpAssociation.hpp"
+#include "Rtcp/RtcpContext.h"
 
 namespace mediakit {
-class RtcpContext;
+
 //RTC配置项目
 namespace Rtc {
 extern const std::string kPort;
@@ -201,7 +202,7 @@ public:
 
     //for send rtp
     NackList nack_list;
-    std::shared_ptr<RtcpContext> rtcp_context_send;
+    RtcpContext::Ptr rtcp_context_send;
 
     //for recv rtp
     std::unordered_map<std::string/*rid*/, std::shared_ptr<RtpChannel> > rtp_channel;
@@ -249,7 +250,7 @@ public:
     void createRtpChannel(const std::string &rid, uint32_t ssrc, MediaTrack &track);
 
 protected:
-    WebRtcTransportImp(const EventPoller::Ptr &poller,bool perferred_tcp = false);
+    WebRtcTransportImp(const EventPoller::Ptr &poller,bool preferred_tcp = false);
     void OnDtlsTransportApplicationDataReceived(const RTC::DtlsTransport *dtlsTransport, const uint8_t *data, size_t len) override;
     void onStartWebRTC() override;
     void onSendSockData(Buffer::Ptr buf, bool flush = true, RTC::TransportTuple *tuple = nullptr) override;
@@ -279,7 +280,7 @@ private:
     void onCheckAnswer(RtcSession &sdp);
 
 private:
-    bool _perferred_tcp;
+    bool _preferred_tcp;
     uint16_t _rtx_seq[2] = {0, 0};
     //用掉的总流量
     uint64_t _bytes_usage = 0;
